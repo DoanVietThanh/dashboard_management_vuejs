@@ -2,9 +2,13 @@
   "development": {
     "username": "sa",
     "password": "123456",
-    "database": "new_database_sequelize",
+    "database": "database_sequelize",
     "host": "127.0.0.1",
-    "dialect": "mssql"
+    "dialect": "mssql",
+    "options": {
+      "encrypt": false,
+      "trustServerCertificate": true
+    }
   },
   "test": {
     "username": "root",
