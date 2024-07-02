@@ -1,23 +1,26 @@
-const { User, Role } = require('../models');
+const { User, Role, UserRole } = require('../models');
 
 const createUser = async (req, res) => {
   try {
     const { email, password, phone, roleId, address } = req.body;
-
     if (!email || !password || !roleId || !phone || !address) {
       return res.status(400).json({ message: 'All fields are required' });
     }
-
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
       return res.status(409).json({ message: 'User already exists' });
     }
-
     const role = await Role.findOne({ where: { id: roleId } });
     if (!role) {
       return res.status(404).json({ message: 'Role not found' });
     }
-    const user = await User.create(req.body);
+    const user = await User.create({
+      email,
+      password,
+      phone,
+      address,
+    });
+    await UserRole.create({ userId: user.id, roleId: role.id });
     return res.status(201).json({
       data: user,
       message: 'Create user successfully',
@@ -31,14 +34,7 @@ const createUser = async (req, res) => {
 
 const getUsers = async (req, res) => {
   try {
-    const users = await User.findAll({
-      include: [
-        {
-          model: Role,
-          attributes: ['roleName'],
-        },
-      ],
-    });
+    const users = await User.findAll();
     if (!users) {
       return res.status(404).json({ message: 'Users not found' });
     }
