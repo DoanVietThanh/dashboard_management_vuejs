@@ -4,14 +4,14 @@ const loginUserService = (email, password) => {
   return User.findOne({ where: { email, password } });
 };
 
-const isExistingUser = async (email, username) => {
+const isExistingUser = async (email, userName) => {
   const isDuplicateEmail = await User.findOne({
     where: { email },
-    attributes: ['id', 'username', 'email', 'password'],
+    attributes: ['id', 'userName', 'email', 'password'],
   });
   const isDuplicateUsername = await User.findOne({
-    where: { username },
-    attributes: ['id', 'username', 'email', 'password'],
+    where: { userName },
+    attributes: ['id', 'userName', 'email', 'password'],
   });
   if (isDuplicateEmail || isDuplicateUsername) {
     return true;
@@ -20,16 +20,22 @@ const isExistingUser = async (email, username) => {
 };
 
 const registerUserService = async (data) => {
+  // Remember run seeders
   const user = await User.create({
     userName: data.username,
     email: data.email,
     password: data.password,
+    phoneNumber: data.phoneNumber,
+    address: data.address,
   });
   const userRole = await UserRole.create({
-    userId: user.id,
+    userId: user.dataValues.id,
     roleId: 2,
   });
-  const role = await Role.findOne({ where: { id: userRole.roleId } });
+  const role = await Role.findOne({
+    where: { id: userRole.roleId },
+    attributes: ['id', 'roleName'],
+  });
   return { user: { ...user.dataValues, role: role.dataValues.roleName } };
 };
 

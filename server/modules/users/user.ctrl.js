@@ -29,13 +29,13 @@ const loginUser = async (req, res) => {
 };
 
 const registerUser = async (req, res) => {
-  const { username, email, password } = req.body;
-  if (!email || !password || !username) {
+  const { userName, email, password, phoneNumber, address } = req.body;
+  if (!email || !password || !userName || !phoneNumber || !address) {
     return res
       .status(400)
       .json({ data: null, error: 'Missing required fields', status: 400 });
   }
-  const existingUser = await isExistingUser(email, username);
+  const existingUser = await isExistingUser(email, userName);
   if (existingUser) {
     return res.status(400).json({
       data: null,
@@ -88,14 +88,60 @@ const getUser = async (req, res) => {
 };
 
 const updateUser = async (req, res) => {
-  const { userId } = req.params;
-  const user = await User.findOne({ where: { id: userId } });
+  const { userId } = req.params; // User ID from request parameters
+  const { userName, password, roleId, phoneNumber, address } = req.body; // Updated details from request body
+
+  const user = await User.findByPk(userId, {
+    attributes: [
+      'id',
+      'userName',
+      'email',
+      'password',
+      'phoneNumber',
+      'address',
+    ],
+  });
+  console.log('🚀 ~ updateUser ~ user:', user);
   if (!user) {
-    return res
-      .status(400)
-      .json({ data: null, error: 'User not found', status: 400 });
+    return res.status(404).json({ message: 'User not found' });
   }
-  const updatedUser = await updateUserService(user.id, req.body);
+
+  // Update the user details
+  user.userName = userName || user.userName;
+  user.password = password || user.password;
+  user.phoneNumber = phoneNumber || user.phoneNumber;
+  user.address = address || user.address;
+  await user.save();
+
+  // Update the user's role
+  let userRole = await UserRole.findOne({
+    where: { userId },
+  });
+  if (userRole) {
+    userRole.roleId = roleId;
+    await userRole.save();
+  } else {
+    await UserRole.create({
+      userId: id,
+      roleId: roleId,
+    });
+  }
+
+  // Respond with the updated user
+  const updatedUser = await User.findByPk(userId, {
+    attributes: ['id', 'userName', 'email'],
+    include: {
+      model: UserRole,
+      as: 'userRoles',
+      attributes: ['id'],
+      include: {
+        model: Role,
+        as: 'role',
+        attributes: ['roleName'],
+      },
+    },
+  });
+
   return res.json({
     data: updatedUser,
     message: 'User updated successfully',
