@@ -10,11 +10,17 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
       this.belongsTo(models.User, { foreignKey: 'userId' });
-      this.belongsTo(models.Role, { foreignKey: 'roleId' });
+      this.belongsTo(models.Role, { foreignKey: 'roleId', as: 'role' });
     }
   }
   UserRole.init(
     {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: DataTypes.INTEGER,
+      },
       userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -38,6 +44,7 @@ module.exports = (sequelize, DataTypes) => {
     },
     {
       sequelize,
+      timestamps: false,
       modelName: 'UserRole',
     }
   );

@@ -14,3 +14,5 @@ If changed models or migrations
 => 9. sequelize db:migrate
 
 If you want to drop database -> sequelize db:drop
+
+sequelize db:seed:all
