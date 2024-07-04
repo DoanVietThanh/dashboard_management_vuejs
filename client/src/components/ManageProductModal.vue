@@ -46,17 +46,6 @@
       </a-form-item>
 
       <a-form-item
-        label="Brand"
-        name="brand"
-        :rules="[
-          { required: true, message: 'Please input product brand!' },
-          { min: 4, message: 'Length of brand is more than 4' },
-        ]"
-      >
-        <a-input v-model:value="formState.brand" />
-      </a-form-item>
-
-      <a-form-item
         label="URL Image"
         name="urlImage"
         :rules="[
@@ -82,6 +71,12 @@
 
 <script>
 import axios from 'axios';
+import { notification } from 'ant-design-vue';
+import {
+  createProductService,
+  updateProductService,
+} from '../services/product.service';
+
 export default {
   name: 'ManageProductModal',
   props: {
@@ -114,7 +109,6 @@ export default {
         name: '',
         price: '',
         description: '',
-        brand: '',
         urlImage: '',
       },
       submitting: false,
@@ -123,7 +117,7 @@ export default {
   watch: {
     product(newVal) {
       if (newVal) {
-        this.formState = { ...newVal };
+        this.formState = { ...newVal, name: newVal.productName };
       } else {
         this.resetFormState();
       }
@@ -139,61 +133,55 @@ export default {
         urlImage: '',
       };
     },
+    openNotificationWithIcon(type, message, description) {
+      return notification[type]({
+        message,
+        description,
+        duration: 3,
+      });
+    },
     handleCancel() {
       this.$emit('update:open', false);
     },
     async onFinish(values) {
       if (this.submitting) return;
       this.submitting = true;
-
       if (this.type === 'create') {
-        try {
-          const response = await axios.post(
-            'https://66781b960bd45250561d86d1.mockapi.io/products',
-            values
-          );
-          if (response.status === 201) {
-            alert('Add success');
+        await createProductService(values)
+          .then((response) => {
+            this.openNotificationWithIcon('error', 'Error', response.message);
             this.$emit('productAdded');
             this.$emit('update:open', false);
-          } else {
-            alert('Add fail');
-          }
-        } catch (error) {
-          console.error('Error adding product:', error);
-          alert('Add fail');
-        } finally {
-          this.submitting = false;
-        }
+          })
+          .catch((error) => {
+            this.openNotificationWithIcon('error', 'Error', error.message);
+          })
+          .finally(() => {
+            this.submitting = false;
+          });
       } else if (this.type === 'update') {
-        try {
-          const response = await axios.put(
-            `https://66781b960bd45250561d86d1.mockapi.io/products/${this.product.id}`,
-            values
-          );
-          if (response.status === 200) {
-            alert('Update success');
-            this.$emit('productUpdated');
-            this.$emit('update:open', false);
-          } else {
+        await updateProductService(this.product.id, values)
+          .then((response) => {
+            if (response.status === 200) {
+              alert('Update success');
+              this.$emit('productUpdated');
+              this.$emit('update:open', false);
+            } else {
+              alert('Update fail');
+            }
+          })
+          .catch((error) => {
+            console.error('Error updating product:', error);
             alert('Update fail');
-          }
-        } catch (error) {
-          console.error('Error updating product:', error);
-          alert('Update fail');
-        } finally {
-          this.submitting = false;
-        }
+          })
+          .finally(() => {
+            this.submitting = false;
+          });
       }
     },
     onFinishFailed(errorInfo) {
-      console.log('Failed:', errorInfo);
       this.submitting = false;
     },
   },
 };
 </script>
-
-<style scoped>
-/* Add any styles you need here */
-</style>

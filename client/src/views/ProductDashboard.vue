@@ -38,10 +38,16 @@
 
 <script>
 import axios from 'axios';
+import { notification } from 'ant-design-vue';
 import { addIcons, OhVueIcon } from 'oh-vue-icons';
 import { FaEdit, BiTrash, LaPlusCircleSolid } from 'oh-vue-icons/icons';
 import ManageProductModal from '../components/ManageProductModal.vue';
-
+import {
+  getAllProductsService,
+  createProductService,
+  deleteProductService,
+  updateProductService,
+} from '../services/product.service';
 addIcons(FaEdit, BiTrash, LaPlusCircleSolid);
 
 export default {
@@ -63,9 +69,9 @@ export default {
           key: 'id',
         },
         {
-          title: 'Name',
-          dataIndex: 'name',
-          key: 'name',
+          title: 'Product Name',
+          dataIndex: 'productName',
+          key: 'productName',
         },
         {
           title: 'Price',
@@ -76,11 +82,6 @@ export default {
           title: 'Description',
           dataIndex: 'description',
           key: 'description',
-        },
-        {
-          title: 'Brand',
-          dataIndex: 'brand',
-          key: 'brand',
         },
         {
           title: 'UrlImage',
@@ -99,28 +100,35 @@ export default {
   methods: {
     async loadData() {
       try {
-        const response = await axios.get(
-          'https://66781b960bd45250561d86d1.mockapi.io/products'
-        );
+        const response = await getAllProductsService();
+        console.log('🚀 ~ loadData ~ response:', response);
         this.dataSource = response.data;
       } catch (error) {
         console.error('Error loading data:', error);
       }
     },
+    openNotificationWithIcon(type, message, description) {
+      return notification[type]({
+        message,
+        description,
+        duration: 3,
+      });
+    },
     async handleDelete(id) {
-      try {
-        if (confirm('Are you sure you want to delete this product?')) {
-          const res = await axios.delete(
-            `https://66781b960bd45250561d86d1.mockapi.io/products/${id}`
-          );
-          if (res.status === 200) {
-            alert('Delete product success');
-          }
-        }
-        this.loadData();
-      } catch (error) {
-        console.error('Error deleting Product:', error);
+      if (confirm('Are you sure you want to delete this product?')) {
+        await deleteProductService(id)
+          .then((res) => {
+            this.openNotificationWithIcon(
+              'success',
+              'Delete success',
+              res.message
+            );
+          })
+          .catch((error) => {
+            this.openNotificationWithIcon('error', 'Error', error.message);
+          });
       }
+      this.loadData();
     },
     handleUpdate(record) {
       this.type = 'update';

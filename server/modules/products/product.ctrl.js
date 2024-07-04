@@ -32,7 +32,10 @@ const getAllProducts = async (req, res) => {
   const products = await getAllProductsService();
   return res.json({
     data: products,
-    message: 'Get all products successfully',
+    message:
+      products.length > 0
+        ? 'Get all products successfully'
+        : 'Empty products list',
     status: 200,
   });
 };
@@ -53,7 +56,8 @@ const getProduct = async (req, res) => {
   const product = await getProductService(productId);
   return res.json({
     data: product,
-    message: 'Get product successfully',
+    message:
+      product.length > 0 ? 'Get product successfully' : 'Product not found',
     status: 200,
   });
 };
