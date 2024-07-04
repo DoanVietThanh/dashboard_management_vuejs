@@ -13,16 +13,21 @@ const loginUser = async (req, res) => {
   if (!email || !password) {
     return res
       .status(400)
-      .json({ data: null, error: 'Missing required fields', status: 400 });
+      .json({ data: null, message: 'Missing required fields', status: 400 });
   }
   const user = await loginUserService(email, password);
+  console.log('🚀🚀🚀🚀🚀🚀 ~ loginUser ~ user:', user);
   if (!user) {
     return res
       .status(400)
-      .json({ data: null, error: 'Invalid email or password', status: 400 });
+      .json({ data: null, message: 'Invalid email or password', status: 400 });
   }
   return res.json({
-    data: user,
+    data: {
+      ...user,
+      userRoles: undefined,
+      role: user.userRoles[0].role.roleName,
+    },
     message: 'Login successful',
     status: 200,
   });

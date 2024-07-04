@@ -1,7 +1,20 @@
 const { User, Role, UserRole } = require('../../models');
 
-const loginUserService = (email, password) => {
-  return User.findOne({ where: { email, password } });
+const loginUserService = async (email, password) => {
+  const user = await User.findOne({
+    where: { email, password },
+    attributes: ['id', 'userName', 'email', 'phoneNumber', 'address'],
+    include: {
+      model: UserRole,
+      as: 'userRoles',
+      include: {
+        model: Role,
+        as: 'role',
+        attributes: ['roleName'],
+      },
+    },
+  });
+  return JSON.parse(JSON.stringify(user));
 };
 
 const isExistingUser = async (email, userName) => {
