@@ -50,6 +50,7 @@ import axios from 'axios';
 import { addIcons, OhVueIcon } from 'oh-vue-icons';
 import { FaEdit, BiTrash, LaPlusCircleSolid } from 'oh-vue-icons/icons';
 import ManageUserModal from '../components/ManageUserModal.vue';
+import { getAllUsers } from '../services/user.service';
 
 addIcons(FaEdit, BiTrash, LaPlusCircleSolid);
 
@@ -77,9 +78,9 @@ export default {
           key: 'email',
         },
         {
-          title: 'Phone',
-          dataIndex: 'phone',
-          key: 'phone',
+          title: 'Phone Number',
+          dataIndex: 'phoneNumber',
+          key: 'phoneNumber',
         },
         {
           title: 'Role',
@@ -104,10 +105,7 @@ export default {
   methods: {
     async loadData() {
       try {
-        const response = await axios.get(
-          'https://66781b960bd45250561d86d1.mockapi.io/users'
-        );
-        console.log(response.data);
+        const response = await getAllUsers();
         this.dataSource = response.data.filter(
           (user) =>
             user.role !== localStorage.getItem('role') && user.role !== 'admin'

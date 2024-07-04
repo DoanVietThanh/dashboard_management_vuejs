@@ -17,4 +17,20 @@ const loginUser = async (email, password) => {
   return data;
 };
 
-export { loginUser };
+const getAllUsers = async () => {
+  const response = await fetch(`${BASE_URL}/users`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    console.log('🚀 ~ loginUser ~ error:', error);
+    throw new Error(error.message);
+  }
+  const data = await response.json();
+  return data;
+};
+
+export { loginUser, getAllUsers };

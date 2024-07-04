@@ -52,6 +52,31 @@ const registerUserService = async (data) => {
   return { user: { ...user.dataValues, role: role.dataValues.roleName } };
 };
 
+const getAllUsersService = async () => {
+  const users = await User.findAll({
+    include: {
+      model: UserRole,
+      as: 'userRoles',
+      attributes: ['id'],
+      include: {
+        model: Role,
+        as: 'role',
+        attributes: ['id', 'roleName'],
+      },
+    },
+  });
+  const formatedUsers = JSON.parse(JSON.stringify(users)).map((user) => {
+    return {
+      ...user,
+      userRoles: undefined,
+      role: user.userRoles[0].role.roleName,
+    };
+  });
+  console.log('🚀 ~ formatedUsers ~ formatedUsers:', formatedUsers);
+
+  return formatedUsers;
+};
+
 const updateUserService = async (userId, data) => {
   const [numberOfAffectedRows, affectedRows] = await User.update(data, {
     where: { id: userId },
@@ -68,4 +93,5 @@ module.exports = {
   isExistingUser,
   registerUserService,
   updateUserService,
+  getAllUsersService,
 };

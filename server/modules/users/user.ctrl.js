@@ -4,8 +4,8 @@ const {
   loginUserService,
 
   registerUserService,
-  updateUserService,
   isExistingUser,
+  getAllUsersService,
 } = require('./user.service');
 
 const loginUser = async (req, res) => {
@@ -16,7 +16,6 @@ const loginUser = async (req, res) => {
       .json({ data: null, message: 'Missing required fields', status: 400 });
   }
   const user = await loginUserService(email, password);
-  console.log('🚀🚀🚀🚀🚀🚀 ~ loginUser ~ user:', user);
   if (!user) {
     return res
       .status(400)
@@ -56,20 +55,7 @@ const registerUser = async (req, res) => {
   });
 };
 const getAllUsers = async (req, res) => {
-  const users = await User.findAll({
-    attributes: ['id', 'userName', 'email', 'password'],
-    order: [['id', 'ASC']],
-    include: {
-      model: UserRole,
-      as: 'userRoles',
-      attributes: ['id'],
-      include: {
-        model: Role,
-        as: 'role',
-        attributes: ['id', 'roleName'],
-      },
-    },
-  });
+  const users = await getAllUsersService();
   return res.json({
     data: users,
     message: 'Get all users successfully',

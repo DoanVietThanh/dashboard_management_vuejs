@@ -37,13 +37,6 @@
         >
           <a-input-password v-model:value="formState.password" />
         </a-form-item>
-
-        <a-form-item name="remember">
-          <a-checkbox v-model:checked="formState.remember">
-            Remember me
-          </a-checkbox>
-        </a-form-item>
-
         <a-form-item>
           <button
             type="submit"
@@ -70,7 +63,6 @@ export default {
       formState: {
         email: 'admin@gmail.com',
         password: '123456789',
-        remember: true,
       },
     };
   },
@@ -81,45 +73,14 @@ export default {
     async onFinish(values) {
       await loginUser(values.email, values.password)
         .then((response) => {
-          console.log('🚀 ~ onFinish ~ response:', response);
           this.openNotificationWithIcon('success', 'Success', response.message);
           localStorage.setItem('user', JSON.stringify(response.data));
-          localStorage.setItem('role', JSON.stringify(response.data.role));
+          localStorage.setItem('role', response.data.role);
           this.$router.push({ name: 'dashboard' });
         })
         .catch((error) => {
-          console.log('🚀 ~ onFinish ~ error:', error);
-          this.openNotificationWithIcon(
-            'error',
-            'Error',
-            'Wrong email or password'
-          );
+          this.openNotificationWithIcon('error', 'Error', error.message);
         });
-      // if (this.userList.length > 0) {
-      //   const findUser = this.userList.find(
-      //     (user) => user.email === values.email
-      //   );
-
-      //   if (findUser) {
-      //     if (findUser.password === values.password) {
-      //       localStorage.setItem('user', JSON.stringify(findUser));
-      //       localStorage.setItem('role', findUser.role);
-      //       this.$router.push({ name: 'dashboard' });
-      //     } else {
-      //       this.openNotificationWithIcon(
-      //         'error',
-      //         'Error',
-      //         'Wrong email or password'
-      //       );
-      //     }
-      //   } else {
-      //     this.openNotificationWithIcon(
-      //       'error',
-      //       'Error',
-      //       'Wrong email or password'
-      //     );
-      //   }
-      // }
     },
     openNotificationWithIcon(type, message, description) {
       return notification[type]({
