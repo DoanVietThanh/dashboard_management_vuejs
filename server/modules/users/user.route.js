@@ -6,12 +6,14 @@ const {
   getUser,
   getAllUsers,
   updateUser,
+  createUser,
 } = require('./user.ctrl');
 
 const userRouter = express.Router();
 
 userRouter.post('/login', loginUser);
 userRouter.post('/register', registerUser);
+userRouter.post('/', createUser);
 userRouter.get('/', getAllUsers);
 
 userRouter.get('/:userId', getUser);

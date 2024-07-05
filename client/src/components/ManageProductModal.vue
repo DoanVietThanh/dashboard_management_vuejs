@@ -149,7 +149,11 @@ export default {
       if (this.type === 'create') {
         await createProductService(values)
           .then((response) => {
-            this.openNotificationWithIcon('error', 'Error', response.message);
+            this.openNotificationWithIcon(
+              'success',
+              'Success',
+              response.message
+            );
             this.$emit('productAdded');
             this.$emit('update:open', false);
           })
@@ -162,17 +166,16 @@ export default {
       } else if (this.type === 'update') {
         await updateProductService(this.product.id, values)
           .then((response) => {
-            if (response.status === 200) {
-              alert('Update success');
-              this.$emit('productUpdated');
-              this.$emit('update:open', false);
-            } else {
-              alert('Update fail');
-            }
+            this.$emit('productUpdated');
+            this.$emit('update:open', false);
+            this.openNotificationWithIcon(
+              'success',
+              'Success',
+              response.message
+            );
           })
           .catch((error) => {
-            console.error('Error updating product:', error);
-            alert('Update fail');
+            this.openNotificationWithIcon('error', 'Error', error.message);
           })
           .finally(() => {
             this.submitting = false;

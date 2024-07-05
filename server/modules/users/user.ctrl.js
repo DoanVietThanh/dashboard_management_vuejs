@@ -1,11 +1,13 @@
-const { User, UserRole, Role } = require('../../models');
+const { User } = require('../../models');
 
 const {
   loginUserService,
-
   registerUserService,
   isExistingUser,
   getAllUsersService,
+  updateUserService,
+  createUserService,
+  deleteUserService,
 } = require('./user.service');
 
 const loginUser = async (req, res) => {
@@ -37,13 +39,13 @@ const registerUser = async (req, res) => {
   if (!email || !password || !userName || !phoneNumber || !address) {
     return res
       .status(400)
-      .json({ data: null, error: 'Missing required fields', status: 400 });
+      .json({ data: null, message: 'Missing required fields', status: 400 });
   }
   const existingUser = await isExistingUser(email, userName);
   if (existingUser) {
     return res.status(400).json({
       data: null,
-      error: 'Username or Email already exists',
+      message: 'Username or Email already exists',
       status: 400,
     });
   }
@@ -54,6 +56,30 @@ const registerUser = async (req, res) => {
     status: 200,
   });
 };
+
+const createUser = async (req, res) => {
+  const { userName, email, password, phoneNumber, address, role } = req.body;
+  if (!email || !password || !userName || !phoneNumber || !address || !role) {
+    return res
+      .status(400)
+      .json({ data: null, message: 'Missing required fields', status: 400 });
+  }
+  const existingUser = await isExistingUser(email, userName);
+  if (existingUser) {
+    return res.status(400).json({
+      data: null,
+      message: 'Username or Email already exists',
+      status: 400,
+    });
+  }
+  const user = await createUserService(req.body);
+  return res.json({
+    data: user,
+    message: 'User created successfully',
+    status: 200,
+  });
+};
+
 const getAllUsers = async (req, res) => {
   const users = await getAllUsersService();
   return res.json({
@@ -69,7 +95,7 @@ const getUser = async (req, res) => {
   if (!user) {
     return res
       .status(400)
-      .json({ data: null, error: 'User not found', status: 400 });
+      .json({ data: null, message: 'User not found', status: 400 });
   }
   return res.json({
     data: user,
@@ -77,64 +103,45 @@ const getUser = async (req, res) => {
     status: 200,
   });
 };
-
 const updateUser = async (req, res) => {
-  const { userId } = req.params; // User ID from request parameters
-  const { userName, password, roleId, phoneNumber, address } = req.body; // Updated details from request body
+  const { userId } = req.params;
+  const { userName, email, password, phoneNumber, address, role } = req.body;
 
-  const user = await User.findByPk(userId, {
-    attributes: [
-      'id',
-      'userName',
-      'email',
-      'password',
-      'phoneNumber',
-      'address',
-    ],
-  });
-  console.log('🚀 ~ updateUser ~ user:', user);
+  // Kiểm tra xem người dùng có tồn tại không
+  const existingUser = await User.findByPk(userId);
+  if (!existingUser) {
+    return res
+      .status(400)
+      .json({ data: null, message: 'User not found', status: 400 });
+  }
+
+  // Kiểm tra các trường bắt buộc
+  if (!email || !password || !userName || !phoneNumber || !address || !role) {
+    return res
+      .status(400)
+      .json({ data: null, message: 'Missing required fields', status: 400 });
+  }
+
+  // Chỉ kiểm tra email nếu nó đã thay đổi
+  if (email !== existingUser.email) {
+    const userWithEmail = await User.findOne({ where: { email } });
+    if (userWithEmail && userWithEmail.id !== parseInt(userId)) {
+      return res
+        .status(400)
+        .json({ data: null, message: 'Email already in use', status: 400 });
+    }
+  }
+
+  // Cập nhật người dùng
+  const user = await updateUserService(userId, req.body);
   if (!user) {
-    return res.status(404).json({ message: 'User not found' });
+    return res
+      .status(400)
+      .json({ data: null, message: 'User not found', status: 400 });
   }
-
-  // Update the user details
-  user.userName = userName || user.userName;
-  user.password = password || user.password;
-  user.phoneNumber = phoneNumber || user.phoneNumber;
-  user.address = address || user.address;
-  await user.save();
-
-  // Update the user's role
-  let userRole = await UserRole.findOne({
-    where: { userId },
-  });
-  if (userRole) {
-    userRole.roleId = roleId;
-    await userRole.save();
-  } else {
-    await UserRole.create({
-      userId: id,
-      roleId: roleId,
-    });
-  }
-
-  // Respond with the updated user
-  const updatedUser = await User.findByPk(userId, {
-    attributes: ['id', 'userName', 'email'],
-    include: {
-      model: UserRole,
-      as: 'userRoles',
-      attributes: ['id'],
-      include: {
-        model: Role,
-        as: 'role',
-        attributes: ['roleName'],
-      },
-    },
-  });
 
   return res.json({
-    data: updatedUser,
+    data: user,
     message: 'User updated successfully',
     status: 200,
   });
@@ -142,15 +149,25 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
   const { userId } = req.params;
-  const user = await User.findOne({ where: { id: userId } });
-  if (!user) {
+
+  // Kiểm tra xem người dùng có tồn tại không
+  const existingUser = await User.findByPk(userId);
+  if (!existingUser) {
     return res
-      .status(400)
-      .json({ data: null, error: 'User not found', status: 400 });
+      .status(404)
+      .json({ data: null, message: 'User not found', status: 404 });
   }
-  await user.destroy();
+
+  // Xóa người dùng
+  const userDeleted = await deleteUserService(userId);
+  if (!userDeleted) {
+    return res
+      .status(500)
+      .json({ data: null, message: 'Failed to delete user', status: 500 });
+  }
+
   return res.json({
-    data: user,
+    data: null,
     message: 'User deleted successfully',
     status: 200,
   });
@@ -159,6 +176,7 @@ const deleteUser = async (req, res) => {
 module.exports = {
   loginUser,
   registerUser,
+  createUser,
   deleteUser,
   getAllUsers,
   getUser,

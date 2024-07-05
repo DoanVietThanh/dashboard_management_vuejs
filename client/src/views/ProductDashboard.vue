@@ -37,16 +37,13 @@
 </template>
 
 <script>
-import axios from 'axios';
 import { notification } from 'ant-design-vue';
 import { addIcons, OhVueIcon } from 'oh-vue-icons';
 import { FaEdit, BiTrash, LaPlusCircleSolid } from 'oh-vue-icons/icons';
 import ManageProductModal from '../components/ManageProductModal.vue';
 import {
   getAllProductsService,
-  createProductService,
   deleteProductService,
-  updateProductService,
 } from '../services/product.service';
 addIcons(FaEdit, BiTrash, LaPlusCircleSolid);
 
@@ -104,7 +101,7 @@ export default {
         console.log('🚀 ~ loadData ~ response:', response);
         this.dataSource = response.data;
       } catch (error) {
-        console.error('Error loading data:', error);
+        this.openNotificationWithIcon('error', 'Error', 'Error loading data');
       }
     },
     openNotificationWithIcon(type, message, description) {
@@ -126,9 +123,11 @@ export default {
           })
           .catch((error) => {
             this.openNotificationWithIcon('error', 'Error', error.message);
+          })
+          .finally(() => {
+            this.loadData();
           });
       }
-      this.loadData();
     },
     handleUpdate(record) {
       this.type = 'update';

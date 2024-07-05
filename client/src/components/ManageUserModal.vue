@@ -16,6 +16,16 @@
       @finishFailed="onFinishFailed"
     >
       <a-form-item
+        label="User Name"
+        name="userName"
+        :rules="[
+          { required: true, message: 'Please input your user name!' },
+          { min: 4, message: 'Length of user name is more than 4' },
+        ]"
+      >
+        <a-input v-model:value="formState.userName" />
+      </a-form-item>
+      <a-form-item
         label="Email"
         name="email"
         :rules="[
@@ -38,7 +48,10 @@
           { min: 8, message: 'Length of password is more than 8' },
         ]"
       >
-        <a-input v-model:value="formState.password" />
+        <a-input
+          :disabled="type === 'update'"
+          v-model:value="formState.password"
+        />
       </a-form-item>
 
       <a-form-item
@@ -72,14 +85,14 @@
       </a-form-item>
 
       <a-form-item
-        label="Phone"
-        name="phone"
+        label="Phone Number"
+        name="phoneNumber"
         :rules="[
-          { required: true, message: 'Please input your phone!' },
-          { min: 8, message: 'Length of phone is 10 chars' },
+          { required: true, message: 'Please input your phone number!' },
+          { min: 8, message: 'Length of phone number is 10 chars' },
         ]"
       >
-        <a-input v-model:value="formState.phone" />
+        <a-input v-model:value="formState.phoneNumber" />
       </a-form-item>
 
       <a-form-item :wrapper-col="{ offset: 20, span: 16 }">
@@ -98,6 +111,9 @@
 
 <script>
 import axios from 'axios';
+import { notification } from 'ant-design-vue';
+import { createUserService, updateUserService } from '../services/user.service';
+
 export default {
   name: 'ManageUserModal',
   props: {
@@ -127,11 +143,12 @@ export default {
   data() {
     return {
       formState: {
+        userName: '',
         email: '',
         password: '',
         role: '',
         address: '',
-        phone: '',
+        phoneNumber: '',
       },
       submitting: false, // Track the submission state
     };
@@ -148,12 +165,20 @@ export default {
   methods: {
     resetFormState() {
       this.formState = {
+        userName: '',
         email: '',
         password: '',
         role: '',
         address: '',
-        phone: '',
+        phoneNumber: '',
       };
+    },
+    openNotificationWithIcon(type, message, description) {
+      return notification[type]({
+        message,
+        description,
+        duration: 3,
+      });
     },
     handleCancel() {
       this.$emit('update:open', false);
@@ -162,44 +187,41 @@ export default {
       if (this.submitting) return; // Prevent double submission
       this.submitting = true;
 
+      console.log('🚀 ~ onFinish ~ values:', values);
       if (this.type === 'create') {
-        try {
-          const response = await axios.post(
-            'https://66781b960bd45250561d86d1.mockapi.io/users',
-            values
-          );
-          if (response.status === 201) {
-            alert('Add success');
+        await createUserService(values)
+          .then((response) => {
+            this.openNotificationWithIcon(
+              'success',
+              'Success',
+              response.message
+            );
             this.$emit('userAdded');
             this.$emit('update:open', false);
-          } else {
-            alert('Add fail');
-          }
-        } catch (error) {
-          console.error('Error adding user:', error);
-          alert('Add fail');
-        } finally {
-          this.submitting = false;
-        }
+          })
+          .catch((error) => {
+            this.openNotificationWithIcon('error', 'Error', error.message);
+          })
+          .finally(() => {
+            this.submitting = false;
+          });
       } else if (this.type === 'update') {
-        try {
-          const response = await axios.put(
-            `https://66781b960bd45250561d86d1.mockapi.io/users/${this.user.id}`,
-            values
-          );
-          if (response.status === 200) {
-            alert('Update success');
+        await updateUserService(this.user.id, values)
+          .then((response) => {
             this.$emit('userUpdated');
             this.$emit('update:open', false);
-          } else {
-            alert('Update fail');
-          }
-        } catch (error) {
-          console.error('Error updating user:', error);
-          alert('Update fail');
-        } finally {
-          this.submitting = false;
-        }
+            this.openNotificationWithIcon(
+              'success',
+              'Success',
+              response.message
+            );
+          })
+          .catch((error) => {
+            this.openNotificationWithIcon('error', 'Error', error.message);
+          })
+          .finally(() => {
+            this.submitting = false;
+          });
       }
     },
     onFinishFailed(errorInfo) {

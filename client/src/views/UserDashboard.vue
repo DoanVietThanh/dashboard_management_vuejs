@@ -45,12 +45,13 @@
 </template>
 
 <script>
-import axios from 'axios';
-
 import { addIcons, OhVueIcon } from 'oh-vue-icons';
 import { FaEdit, BiTrash, LaPlusCircleSolid } from 'oh-vue-icons/icons';
 import ManageUserModal from '../components/ManageUserModal.vue';
-import { getAllUsers } from '../services/user.service';
+import {
+  getAllUsersService,
+  deleteUserService,
+} from '../services/user.service';
 
 addIcons(FaEdit, BiTrash, LaPlusCircleSolid);
 
@@ -76,6 +77,11 @@ export default {
           title: 'Email',
           dataIndex: 'email',
           key: 'email',
+        },
+        {
+          title: 'User Name',
+          dataIndex: 'userName',
+          key: 'userName',
         },
         {
           title: 'Phone Number',
@@ -105,7 +111,7 @@ export default {
   methods: {
     async loadData() {
       try {
-        const response = await getAllUsers();
+        const response = await getAllUsersService();
         this.dataSource = response.data.filter(
           (user) =>
             user.role !== localStorage.getItem('role') && user.role !== 'admin'
@@ -114,19 +120,29 @@ export default {
         console.error('Error loading data:', error);
       }
     },
+    openNotificationWithIcon(type, message, description) {
+      return notification[type]({
+        message,
+        description,
+        duration: 3,
+      });
+    },
     async handleDelete(id) {
-      try {
-        if (confirm('Are you sure you want to delete this user?')) {
-          const res = await axios.delete(
-            `https://66781b960bd45250561d86d1.mockapi.io/users/${id}`
-          );
-          if (res.status === 200) {
-            alert('Delete success');
-          }
-        }
-        this.loadData();
-      } catch (error) {
-        console.error('Error deleting User:', error);
+      if (confirm('Are you sure you want to delete this user?')) {
+        await deleteUserService(id)
+          .then((res) => {
+            this.openNotificationWithIcon(
+              'success',
+              'Delete success',
+              res.message
+            );
+          })
+          .catch((error) => {
+            this.openNotificationWithIcon('error', 'Error', error.message);
+          })
+          .finally(() => {
+            this.loadData();
+          });
       }
     },
     handleUpdate(record) {
@@ -139,11 +155,12 @@ export default {
       this.type = 'create';
       this.title = 'Create User';
       this.currentUser = {
+        userName: '',
         email: '',
         password: '',
         role: '',
         address: '',
-        phone: '',
+        phoneNumber: '',
       };
       this.isModalOpen = true;
     },
