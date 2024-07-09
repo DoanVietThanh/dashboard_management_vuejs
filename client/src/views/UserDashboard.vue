@@ -112,10 +112,11 @@ export default {
     async loadData() {
       try {
         const response = await getAllUsersService();
-        this.dataSource = response.data.filter(
-          (user) =>
-            user.role !== localStorage.getItem('role') && user.role !== 'admin'
-        );
+        // this.dataSource = response.data.filter(
+        //   (user) =>
+        //     user.role !== localStorage.getItem('role') && user.role !== 'admin'
+        // );
+        this.dataSource = response.data;
       } catch (error) {
         console.error('Error loading data:', error);
       }
