@@ -1,23 +1,34 @@
-<template>
-  <div
-    class="h-screen w-screen flex justify-center items-center bg-[#F5F5F5] shadow-2xl"
-  >
-    <div class="bg-white w-[400px] h-auto border p-8 rounded-lg">
-      <h1 class="text-4xl text-center font-bold text-orange-700 mb-8">
-        FPT Software
-      </h1>
+<!-- <template>
+  <div class="h-screen w-screen flex justify-center items-center bg-[#F5F5F5]">
+    <div class="bg-white text-center w-[400px] h-auto border p-8 rounded-lg">
+      <h1 class="text-4xl font-bold text-blue-700 mb-8">Please Sign In</h1>
       <a-form
         :model="formState"
         name="basic"
         autocomplete="off"
+        labelAlign="left"
+        :label-col="{ span: 8 }"
+        :wrapper-col="{ span: 16 }"
         @finish="onFinish"
         @finish-failed="onFinishFailed"
       >
-        <ReusableFormInput :formFields="formFields" :formState="formState" />
+        <a-form-item
+          v-for="field in formFields"
+          :key="field.name"
+          :name="field.name"
+          :label="field.label"
+          :rules="field.rules"
+        >
+          <a-input
+            :type="field.name"
+            v-model:value="formState[field.name]"
+            v-bind="field.props"
+          />
+        </a-form-item>
         <a-form-item>
           <button
             type="submit"
-            class="border rounded-xl bg-orange-500 text-white py-2 w-full text-xl"
+            class="border rounded-xl bg-blue-600 text-white py-2 w-full text-xl"
           >
             Submit
           </button>
@@ -30,17 +41,43 @@
 <script>
 import { notification } from 'ant-design-vue';
 import { loginUser } from '../services/user.service.js';
-import { loginFormFieldsRules } from '../validations/formFields.rules.js';
-import ReusableFormInput from '../components/ReusableFormInput.vue';
+import ReusableForm from '../components/ReusableFormInput.vue';
 
 export default {
   name: 'SignIn',
   components: {
-    ReusableFormInput,
+    ReusableForm,
   },
   data() {
     return {
-      formFields: loginFormFieldsRules,
+      formFields: [
+        {
+          label: 'Email',
+          name: 'email',
+          type: 'a-input',
+          rules: [
+            { required: true, message: 'Email is mandatory' },
+            {
+              type: 'email',
+              message:
+                'Email is in wrong format. Email should be abc@gmail.com',
+            },
+            { validator: this.validateEmailExistence },
+          ],
+        },
+        {
+          label: 'Password',
+          name: 'password',
+          type: 'a-input-password',
+          rules: [
+            { required: true, message: 'Password is mandatory' },
+            {
+              min: 8,
+              message: 'Length of password should be more than 8 characters',
+            },
+          ],
+        },
+      ],
       formState: {
         email: 'admin@gmail.com',
         password: '123456789',
@@ -89,4 +126,4 @@ export default {
   justify-content: center;
   align-items: center;
 }
-</style>
+</style> -->

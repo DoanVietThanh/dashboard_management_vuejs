@@ -8,12 +8,9 @@
     <a-form
       :model="formState"
       name="basic"
-      :label-col="{ span: 8 }"
-      :wrapper-col="{ span: 16 }"
       autocomplete="off"
-      labelAlign="left"
       @finish="onFinish"
-      @finishFailed="onFinishFailed"
+      @finish-failed="onFinishFailed"
     >
       <a-form-item
         label="User Name"
@@ -110,12 +107,16 @@
 </template>
 
 <script>
-import axios from 'axios';
 import { notification } from 'ant-design-vue';
+import ReusableFormInput from '../components/ReusableFormInput.vue';
+import { manageUserFormFieldsRules } from '../validations/formFields.rules.js';
 import { createUserService, updateUserService } from '../services/user.service';
 
 export default {
   name: 'ManageUserModal',
+  components: {
+    ReusableFormInput,
+  },
   props: {
     title: {
       type: String,
