@@ -9,8 +9,24 @@
         </a-button>
       </div>
       <a-table :dataSource="dataSource" :columns="columns" :pagination="false">
+        <template #price="{ record }">
+          <span class="font-semibold text-yellow-700">
+            $ {{ record.price.toLocaleString() }}
+          </span>
+        </template>
+
+        <template #urlImage="{ record }">
+          <div class="flex justify-center">
+            <img
+              :src="record.urlImage"
+              :alt="record.productName"
+              class="w-20 h-20 object-cover shadow-md rounded-lg"
+            />
+          </div>
+        </template>
+
         <template #action="{ record }">
-          <div class="flex gap-4 items-center">
+          <div class="flex gap-4 items-center justify-end">
             <a-button
               class="bg-red-500 text-white hover:text-white"
               @click="handleDelete(record.id)"
@@ -74,6 +90,8 @@ export default {
           title: 'Price',
           dataIndex: 'price',
           key: 'price',
+          align: 'center',
+          slots: { customRender: 'price' },
         },
         {
           title: 'Description',
@@ -81,14 +99,17 @@ export default {
           key: 'description',
         },
         {
-          title: 'UrlImage',
+          title: 'Image',
           dataIndex: 'urlImage',
           key: 'urlImage',
+          align: 'center',
+          slots: { customRender: 'urlImage' },
         },
         {
           title: 'Action',
           dataIndex: 'action',
           key: 'action',
+          align: 'right',
           slots: { customRender: 'action' },
         },
       ],

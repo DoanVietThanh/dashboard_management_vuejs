@@ -13,6 +13,9 @@ If changed models or migrations
 => 8. sequelize db:migrate:undo:all
 => 9. sequelize db:migrate
 
+If you want to generate seed -> sequelize seed:generate --name role-seed
+sequelize db:seed --seed 20240716141716-product-seed.js
+
 If you want to drop database -> sequelize db:drop
 
 sequelize db:seed:all

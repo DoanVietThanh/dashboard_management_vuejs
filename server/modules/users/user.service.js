@@ -1,4 +1,4 @@
-const { User, Role, UserRole } = require('../../models');
+const { sequelize, User, Role, UserRole } = require('../../models');
 const { formatedObject } = require('../../helper/index');
 
 const loginUserService = async (email, password) => {
@@ -34,52 +34,87 @@ const isExistingUser = async (email, userName) => {
 };
 
 const registerUserService = async (data) => {
-  // Remember run seeders
-  const user = await User.create({
-    userName: data.userName,
-    email: data.email,
-    password: data.password,
-    phoneNumber: data.phoneNumber,
-    address: data.address,
-  });
-  const userRole = await UserRole.create({
-    userId: formatedObject(user).id,
-    roleId: 2,
-  });
-  const role = await Role.findOne({
-    where: { id: userRole.roleId },
-    attributes: ['id', 'roleName'],
-  });
-  return {
-    user: { ...formatedObject(user), role: formatedObject(role).roleName },
-  };
+  const transaction = await sequelize.transaction();
+  try {
+    const user = await User.create(
+      {
+        userName: data.userName,
+        email: data.email,
+        password: data.password,
+        phoneNumber: data.phoneNumber,
+        address: data.address,
+      },
+      { transaction }
+    );
+
+    const userRole = await UserRole.create(
+      {
+        userId: formatedObject(user).id,
+        roleId: 2,
+      },
+      { transaction }
+    );
+
+    const role = await Role.findOne(
+      {
+        where: { id: userRole.roleId },
+        attributes: ['id', 'roleName'],
+      },
+      { transaction }
+    );
+
+    await transaction.commit();
+    return {
+      user: { ...formatedObject(user), role: formatedObject(role).roleName },
+    };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
 };
 
 const createUserService = async (data) => {
-  const { userName, email, password, phoneNumber, address, role } = data;
-  const user = await User.create({
-    userName: userName,
-    email: email,
-    password: password,
-    phoneNumber: phoneNumber,
-    address: address,
-  });
+  const transaction = await sequelize.transaction();
+  try {
+    const { userName, email, password, phoneNumber, address, role } = data;
+    const user = await User.create(
+      {
+        userName: userName,
+        email: email,
+        password: password,
+        phoneNumber: phoneNumber,
+        address: address,
+      },
+      { transaction }
+    );
 
-  const roleOfUser = await Role.findOne({
-    where: { roleName: role },
-    attributes: ['id', 'roleName'],
-  });
+    const roleOfUser = await Role.findOne(
+      {
+        where: { roleName: role },
+        attributes: ['id', 'roleName'],
+      },
+      { transaction }
+    );
 
-  await UserRole.create({
-    userId: formatedObject(user).id,
-    roleId: formatedObject(roleOfUser).id,
-  });
-  return {
-    user: {
-      ...formatedObject(user),
-      role: formatedObject(roleOfUser).roleName,
-    },
-  };
+    await UserRole.create(
+      {
+        userId: formatedObject(user).id,
+        roleId: formatedObject(roleOfUser).id,
+      },
+      { transaction }
+    );
+
+    await transaction.commit();
+    return {
+      user: {
+        ...formatedObject(user),
+        role: formatedObject(roleOfUser).roleName,
+      },
+    };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
 };
 
 const getAllUsersService = async () => {
@@ -106,58 +141,79 @@ const getAllUsersService = async () => {
 };
 
 const updateUserService = async (userId, data) => {
-  const { userName, email, password, phoneNumber, address, role } = data;
-  const [numberOfAffectedRows, user] = await User.update(
-    {
-      userName: userName,
-      email: email,
-      password: password,
-      phoneNumber: phoneNumber,
-      address: address,
-    },
-    {
-      where: { id: userId },
-      returning: true,
-    }
-  );
+  const transaction = await sequelize.transaction();
+  try {
+    const { userName, email, password, phoneNumber, address, role } = data;
+    const [numberOfAffectedRows, user] = await User.update(
+      {
+        userName: userName,
+        email: email,
+        password: password,
+        phoneNumber: phoneNumber,
+        address: address,
+      },
+      {
+        where: { id: userId },
+        returning: true,
+        transaction,
+      }
+    );
 
-  if (numberOfAffectedRows === 0) {
-    return {
-      user: null,
-    };
-  }
-  const roleOfUser = await Role.findOne({
-    where: { roleName: role },
-    attributes: ['id', 'roleName'],
-  });
-  await UserRole.update(
-    {
-      roleId: formatedObject(roleOfUser).id,
-    },
-    {
-      where: { userId },
+    if (numberOfAffectedRows === 0) {
+      await transaction.rollback();
+      return {
+        user: null,
+      };
     }
-  );
-  return {
-    user: {
-      ...formatedObject(user[0]),
-      role: formatedObject(roleOfUser).roleName,
-    },
-  };
+
+    const roleOfUser = await Role.findOne(
+      {
+        where: { roleName: role },
+        attributes: ['id', 'roleName'],
+      },
+      { transaction }
+    );
+
+    await UserRole.update(
+      {
+        roleId: formatedObject(roleOfUser).id,
+      },
+      {
+        where: { userId },
+        transaction,
+      }
+    );
+
+    await transaction.commit();
+    return {
+      user: {
+        ...formatedObject(user[0]),
+        role: formatedObject(roleOfUser).roleName,
+      },
+    };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
 };
 
 const deleteUserService = async (userId) => {
+  const transaction = await sequelize.transaction();
   try {
-    // Xóa các vai trò của người dùng trước
     await UserRole.destroy({
       where: { userId },
+      transaction,
     });
-    // Xóa người dùng
+
     const result = await User.destroy({
       where: { id: userId },
+      transaction,
     });
+
+    await transaction.commit();
     return result > 0;
   } catch (error) {
+    await transaction.rollback();
     console.error('Error deleting user:', error);
     return false;
   }

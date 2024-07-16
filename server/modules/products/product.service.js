@@ -1,4 +1,4 @@
-const { Product } = require('../../models');
+const { sequelize, Product } = require('../../models');
 
 const isExistingProductByName = async (productName) => {
   const product = await Product.findOne({ where: { productName } });
@@ -11,13 +11,24 @@ const isExistingProductById = async (productId) => {
 };
 
 const createProductService = async (data) => {
-  const product = await Product.create({
-    productName: data.productName,
-    price: data.price,
-    description: data.description,
-    urlImage: data.urlImage,
-  });
-  return product;
+  const transaction = await sequelize.transaction();
+  try {
+    const product = await Product.create(
+      {
+        productName: data.productName,
+        price: data.price,
+        description: data.description,
+        urlImage: data.urlImage,
+      },
+      { transaction }
+    );
+
+    await transaction.commit();
+    return product;
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
 };
 
 const getAllProductsService = async () => {
@@ -31,19 +42,39 @@ const getProductService = async (productId) => {
 };
 
 const updateProductService = async (productId, data) => {
-  const [numberOfAffectedRows, affectedRows] = await Product.update(data, {
-    where: { id: productId },
-    returning: true,
-  });
-  if (numberOfAffectedRows > 0) {
-    return affectedRows[0];
+  const transaction = await sequelize.transaction();
+  try {
+    const [numberOfAffectedRows, affectedRows] = await Product.update(data, {
+      where: { id: productId },
+      returning: true,
+      transaction,
+    });
+
+    await transaction.commit();
+    if (numberOfAffectedRows > 0) {
+      return affectedRows[0];
+    }
+    return null;
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
   }
-  return null;
 };
 
 const deleteProductService = async (productId) => {
-  const product = await Product.destroy({ where: { id: productId } });
-  return product;
+  const transaction = await sequelize.transaction();
+  try {
+    const product = await Product.destroy({
+      where: { id: productId },
+      transaction,
+    });
+
+    await transaction.commit();
+    return product;
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
 };
 
 module.exports = {

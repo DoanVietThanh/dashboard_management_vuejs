@@ -2,7 +2,7 @@
   "development": {
     "username": "sa",
     "password": "123456",
-    "database": "new_database_sequelize",
+    "database": "database_sequelize_vuejs",
     "host": "127.0.0.1",
     "dialect": "mssql",
     "options": {

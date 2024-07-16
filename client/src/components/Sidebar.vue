@@ -35,7 +35,7 @@
     </div>
     <div
       @click="logout()"
-      class="m-4 shadow-md flex gap-4 border p-4 rounded-lg bg-red-400 text-white text-[#5F617E] transition-colors cursor-pointer"
+      class="m-4 shadow-md flex gap-4 border p-4 rounded-lg bg-red-400 text-white transition-colors font-semibold cursor-pointer hover:opacity-90"
     >
       <v-icon name="hi-logout" />
       Logout

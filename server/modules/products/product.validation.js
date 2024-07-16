@@ -1,5 +1,22 @@
 const { body, validationResult } = require('express-validator');
 
+const productValidationRequest = {
+  productName: body('productName')
+    .notEmpty()
+    .withMessage('Please input product name!')
+    .isLength({ min: 4 })
+    .withMessage('Length of product name is more than 4'),
+  price: body('price').notEmpty().withMessage('Please input product price!'),
+  description: body('description')
+    .notEmpty()
+    .withMessage('Please input product description!')
+    .isLength({ min: 4 })
+    .withMessage('Length of description is more than 4'),
+  urlImage: body('urlImage')
+    .notEmpty()
+    .withMessage('Please input product image URL!'),
+};
+
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -13,20 +30,14 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
-const isValidProductFormRequest = [
-  body('name')
-    .notEmpty()
-    .withMessage('Please input product name!')
-    .isLength({ min: 4 })
-    .withMessage('Length of name is more than 4'),
-  body('price').notEmpty().withMessage('Please input product price!'),
-  body('description')
-    .notEmpty()
-    .withMessage('Please input product description!')
-    .isLength({ min: 4 })
-    .withMessage('Length of description is more than 4'),
-  body('urlImage').notEmpty().withMessage('Please input product image URL!'),
+const checkCreateProductRequest = [
+  productValidationRequest.productName,
+  productValidationRequest.price,
+  productValidationRequest.description,
+  productValidationRequest.urlImage,
   handleValidationErrors,
 ];
 
-module.exports = { isValidProductFormRequest };
+const checkUpdateProductRequest = [...checkCreateProductRequest];
+
+module.exports = { checkCreateProductRequest, checkUpdateProductRequest };
