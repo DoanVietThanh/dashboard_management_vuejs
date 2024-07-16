@@ -5,13 +5,13 @@
     </div>
     <div class="flex-1 flex flex-col">
       <header
-        class="bg-white flex justify-between items-center gap-8 border-b-2"
+        class="bg-white flex justify-between items-center gap-8 border-b-2 shadow-md"
       >
         <h1 class="text-xl p-4 bg-white m-0 flex items-center gap-2">
           <v-icon name="bi-calendar-week" scale="1.5" />
           {{ new Date().toDateString() }}
         </h1>
-        <div class="text-xl p-4 bg-white flex items-center gap-2">
+        <div class="text-xl p-4 bg-white flex items-center gap-2 capitalize">
           <v-icon
             name="fa-user-alt"
             animation="pulse"
@@ -19,14 +19,14 @@
             fill="green"
             scale="1.5"
           />
-          {{ currentUser.email }}
+          {{ currentUser.userName }}
         </div>
       </header>
       <div
         v-if="isDashboardRoute"
         class="flex justify-center items-center h-full p-4 text-2xl uppercase font-bold text-orange-500"
       >
-        Welcome to dashboard !
+        ❤️ Welcome to dashboard ❤️
       </div>
       <router-view />
     </div>

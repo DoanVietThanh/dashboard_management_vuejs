@@ -12,6 +12,7 @@ const authGuard = (to, from, next) => {
 
   if (userRole) {
     alert('You are not authorized to access this page');
+    next({ name: 'unauthorized' });
     return;
   }
 
@@ -20,6 +21,7 @@ const authGuard = (to, from, next) => {
     !userAdminRole
   ) {
     alert('You are not authorized to access this page');
+    next({ name: 'unauthorized' });
     return;
   }
 
@@ -28,6 +30,7 @@ const authGuard = (to, from, next) => {
     !productAdminRole
   ) {
     alert('You are not authorized to access this page');
+    next({ name: 'unauthorized' });
     return;
   }
 

@@ -29,7 +29,7 @@ const loginUser = async (req, res) => {
       userRoles: undefined,
       role: user.userRoles[0].role.roleName,
     },
-    message: 'Login successful',
+    message: 'Login successfully',
     status: 200,
   });
 };

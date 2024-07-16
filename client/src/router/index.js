@@ -3,6 +3,7 @@ import SignIn from '../views/SignIn.vue';
 import Dashboard from '../views/Dashboard.vue';
 import UserDashboard from '../views/UserDashboard.vue';
 import ProductDashboard from '../views/ProductDashboard.vue';
+import Unauthorization from '../views/Unauthorization.vue';
 import authGuard from './authGuard';
 
 const routes = [
@@ -26,6 +27,7 @@ const routes = [
       },
     ],
   },
+  { path: '/unauthorized', name: 'unauthorized', component: Unauthorization },
 ];
 
 const router = createRouter({

@@ -8,10 +8,11 @@ const {
   updateUser,
   createUser,
 } = require('./user.ctrl');
+const { isValidLoginRequest } = require('./user.validation');
 
 const userRouter = express.Router();
 
-userRouter.post('/login', loginUser);
+userRouter.post('/login', isValidLoginRequest, loginUser);
 userRouter.post('/register', registerUser);
 userRouter.post('/', createUser);
 userRouter.get('/', getAllUsers);

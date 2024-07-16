@@ -1,6 +1,6 @@
 <template>
   <div
-    class="h-screen w-screen flex justify-center items-center bg-[#F5F5F5] shadow-2xl"
+    class="h-screen w-screen flex justify-center items-center bg-slate-300 shadow-2xl"
   >
     <div class="bg-white w-[400px] h-auto border p-8 rounded-lg">
       <h1 class="text-4xl text-center font-bold text-orange-700 mb-8">

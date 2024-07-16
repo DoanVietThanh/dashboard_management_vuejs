@@ -8,7 +8,7 @@ const validUserRules = {
       { required: true, message: 'Email is mandatory' },
       {
         type: 'email',
-        message: 'Email is in wrong format. Email should be abc@gmail.com',
+        message: 'Format Email should be abc@gmail.com',
       },
     ],
   },

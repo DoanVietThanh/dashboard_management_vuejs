@@ -14,16 +14,18 @@
       </div>
       <div class="flex flex-col p-4 gap-4">
         <router-link
+          v-if="currentRole === 'admin' || currentRole === 'userAdmin'"
           :to="{ name: 'dashboard/manage-users' }"
-          class="shadow-md flex gap-4 border p-4 rounded-lg hover:bg-gray-200 hover:text-black text-[#5F617E] transition-colors"
+          class="shadow-md flex items-center gap-4 border p-4 rounded-lg hover:bg-gray-200 hover:text-black text-[#5F617E] transition-colors"
           active-class="active"
         >
           <v-icon name="fa-user-friends" />
           Manage Users
         </router-link>
         <router-link
+          v-if="currentRole === 'admin' || currentRole === 'productAdmin'"
           :to="{ name: 'dashboard/manage-products' }"
-          class="shadow-md flex gap-4 border p-4 rounded-lg hover:bg-gray-200 hover:text-black text-[#5F617E] transition-colors"
+          class="shadow-md flex items-center gap-4 border p-4 rounded-lg hover:bg-gray-200 hover:text-black text-[#5F617E] transition-colors"
           active-class="active"
         >
           <v-icon name="bi-boxes" />
@@ -52,10 +54,14 @@ export default {
   components: {
     'v-icon': OhVueIcon,
   },
+  data() {
+    return {
+      currentRole: localStorage.getItem('role'),
+    };
+  },
   methods: {
     logout() {
-      localStorage.removeItem('user');
-      localStorage.removeItem('role');
+      localStorage.clear();
       this.$router.push({ name: 'signin' });
     },
   },
