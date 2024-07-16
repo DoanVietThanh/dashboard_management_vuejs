@@ -1,104 +1,184 @@
-<!-- <template>
-  <div class="h-screen w-screen flex justify-center items-center bg-[#F5F5F5]">
-    <div class="bg-white text-center w-[400px] h-auto border p-8 rounded-lg">
-      <h1 class="text-4xl font-bold text-blue-700 mb-8">Please Sign In</h1>
-      <a-form
-        :model="formState"
-        name="basic"
-        autocomplete="off"
-        labelAlign="left"
-        :label-col="{ span: 8 }"
-        :wrapper-col="{ span: 16 }"
-        @finish="onFinish"
-        @finish-failed="onFinishFailed"
+<template>
+  <a-modal
+    :visible="open"
+    :title="type === 'create' ? 'Create User' : 'Update User'"
+    @cancel="handleCancel"
+    :footer="null"
+  >
+    <a-form
+      :model="formState"
+      name="basic"
+      autocomplete="off"
+      @finish="onFinish"
+      @finish-failed="onFinishFailed"
+    >
+      <ReusableFormInput :formFields="formFields" :formState="formState" />
+
+      <a-form-item
+        label="User Name"
+        name="userName"
+        :rules="[
+          { required: true, message: 'Please input your user name!' },
+          { min: 4, message: 'Length of user name is more than 4' },
+        ]"
       >
-        <a-form-item
-          v-for="field in formFields"
-          :key="field.name"
-          :name="field.name"
-          :label="field.label"
-          :rules="field.rules"
+        <a-input v-model:value="formState.userName" />
+      </a-form-item>
+      <a-form-item
+        label="Email"
+        name="email"
+        :rules="[
+          { required: true, message: 'Please input your email!' },
+          {
+            type: 'email',
+            message: 'Email is wrong format. Email should be abc@gmail.com',
+          },
+          { validator: validateEmailExistence },
+        ]"
+      >
+        <a-input v-model:value="formState.email" />
+      </a-form-item>
+
+      <a-form-item
+        label="Password"
+        name="password"
+        :rules="[
+          { required: true, message: 'Please input your password!' },
+          { min: 8, message: 'Length of password is more than 8' },
+        ]"
+      >
+        <a-input
+          :disabled="type === 'update'"
+          v-model:value="formState.password"
+        />
+      </a-form-item>
+
+      <a-form-item
+        label="Role"
+        name="role"
+        :rules="[{ required: true, message: 'Please chose role!' }]"
+      >
+        <a-select
+          ref="select"
+          v-model:value="formState.role"
+          style="width: 100%"
+          @focus="focus"
+          @change="handleChange"
         >
-          <a-input
-            :type="field.name"
-            v-model:value="formState[field.name]"
-            v-bind="field.props"
-          />
-        </a-form-item>
-        <a-form-item>
-          <button
-            type="submit"
-            class="border rounded-xl bg-blue-600 text-white py-2 w-full text-xl"
-          >
-            Submit
-          </button>
-        </a-form-item>
-      </a-form>
-    </div>
-  </div>
+          <a-select-option value="admin">admin</a-select-option>
+          <a-select-option value="user">user</a-select-option>
+          <a-select-option value="userAdmin">Manage User</a-select-option>
+          <a-select-option value="productAdmin">Manage Product</a-select-option>
+        </a-select>
+      </a-form-item>
+
+      <a-form-item
+        label="Address"
+        name="address"
+        :rules="[
+          { required: true, message: 'Please input your address!' },
+          { min: 8, message: 'Length of address is more than 8' },
+        ]"
+      >
+        <a-input v-model:value="formState.address" />
+      </a-form-item>
+
+      <a-form-item
+        label="Phone Number"
+        name="phoneNumber"
+        :rules="[
+          {
+            required: true,
+            message: 'Please input your phone number!',
+          },
+          { min: 8, message: 'Length of phone number is 10 chars' },
+        ]"
+      >
+        <a-input v-model:value="formState.phoneNumber" />
+      </a-form-item>
+
+      <a-form-item :wrapper-col="{ offset: 20, span: 16 }">
+        <a-button
+          type="primary"
+          html-type="submit"
+          :loading="submitting"
+          :disabled="submitting"
+        >
+          Submit
+        </a-button>
+      </a-form-item>
+    </a-form>
+  </a-modal>
 </template>
 
 <script>
 import { notification } from 'ant-design-vue';
-import { loginUser } from '../services/user.service.js';
-import ReusableForm from '../components/ReusableFormInput.vue';
+import ReusableFormInput from '../components/ReusableFormInput.vue';
+import { manageUserFormFieldsRules } from '../validations/user.validation.js';
+import { createUserService, updateUserService } from '../services/user.service';
 
 export default {
-  name: 'SignIn',
+  name: 'ManageUserModal',
   components: {
-    ReusableForm,
+    ReusableFormInput,
+  },
+  props: {
+    title: {
+      type: String,
+      default: 'Manage User',
+      required: true,
+    },
+    open: {
+      type: Boolean,
+      default: false,
+      required: true,
+    },
+    type: {
+      type: String,
+      default: 'create',
+      required: true,
+      validator: function (value) {
+        return ['create', 'update'].includes(value);
+      },
+    },
+    user: {
+      type: Object,
+      default: null,
+    },
   },
   data() {
     return {
-      formFields: [
-        {
-          label: 'Email',
-          name: 'email',
-          type: 'a-input',
-          rules: [
-            { required: true, message: 'Email is mandatory' },
-            {
-              type: 'email',
-              message:
-                'Email is in wrong format. Email should be abc@gmail.com',
-            },
-            { validator: this.validateEmailExistence },
-          ],
-        },
-        {
-          label: 'Password',
-          name: 'password',
-          type: 'a-input-password',
-          rules: [
-            { required: true, message: 'Password is mandatory' },
-            {
-              min: 8,
-              message: 'Length of password should be more than 8 characters',
-            },
-          ],
-        },
-      ],
+      formFields: manageUserFormFieldsRules,
       formState: {
-        email: 'admin@gmail.com',
-        password: '123456789',
+        userName: '',
+        email: '',
+        password: '',
+        role: '',
+        address: '',
+        phoneNumber: '',
       },
+      submitting: false, // Track the submission state
     };
   },
-  mounted() {
-    localStorage.clear();
+  watch: {
+    user(newVal) {
+      if (newVal) {
+        this.formState = { ...newVal };
+      } else {
+        this.resetFormState();
+      }
+    },
   },
   methods: {
-    async onFinish(values) {
-      await loginUser(values.email, values.password)
-        .then((response) => {
-          this.openNotificationWithIcon('success', 'Success', response.message);
-          localStorage.setItem('user', JSON.stringify(response.data));
-          localStorage.setItem('role', response.data.role);
-          this.$router.push({ name: 'dashboard' });
-        })
-        .catch((error) => {
-          this.openNotificationWithIcon('error', 'Error', error.message);
-        });
+    resetFormState() {
+      this.formState = {
+        userName: '',
+        email: '',
+        password: '',
+        role: '',
+        address: '',
+        phoneNumber: '',
+      };
     },
     openNotificationWithIcon(type, message, description) {
       return notification[type]({
@@ -107,23 +187,54 @@ export default {
         duration: 3,
       });
     },
+    handleCancel() {
+      this.$emit('update:open', false);
+    },
+    async onFinish(values) {
+      if (this.submitting) return; // Prevent double submission
+      this.submitting = true;
+
+      console.log('🚀 ~ onFinish ~ values:', values);
+      if (this.type === 'create') {
+        await createUserService(values)
+          .then((response) => {
+            this.openNotificationWithIcon(
+              'success',
+              'Success',
+              response.message
+            );
+            this.$emit('userAdded');
+            this.$emit('update:open', false);
+          })
+          .catch((error) => {
+            this.openNotificationWithIcon('error', 'Error', error.message);
+          })
+          .finally(() => {
+            this.submitting = false;
+          });
+      } else if (this.type === 'update') {
+        await updateUserService(this.user.id, values)
+          .then((response) => {
+            this.$emit('userUpdated');
+            this.$emit('update:open', false);
+            this.openNotificationWithIcon(
+              'success',
+              'Success',
+              response.message
+            );
+          })
+          .catch((error) => {
+            this.openNotificationWithIcon('error', 'Error', error.message);
+          })
+          .finally(() => {
+            this.submitting = false;
+          });
+      }
+    },
     onFinishFailed(errorInfo) {
       console.log('Failed:', errorInfo);
+      this.submitting = false; // Reset submitting state on failure
     },
   },
 };
 </script>
-
-<style>
-.ant-row {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.ant-form-item-row {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-</style> -->

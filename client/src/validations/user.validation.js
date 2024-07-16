@@ -1,4 +1,4 @@
-const formFieldsRules = {
+const validUserRules = {
   email: {
     htmlFor: 'Email Target',
     label: 'Email',
@@ -40,6 +40,24 @@ const formFieldsRules = {
     label: 'Role',
     name: 'role',
     type: 'a-select',
+    options: [
+      {
+        label: 'User',
+        value: 'user',
+      },
+      {
+        label: 'Admin',
+        value: 'admin',
+      },
+      {
+        label: 'Manage User',
+        value: 'userAdmin',
+      },
+      {
+        label: 'Manage Product',
+        value: 'productAdmin',
+      },
+    ],
     rules: [{ required: true, message: 'Please select your role!' }],
   },
   address: {
@@ -58,21 +76,22 @@ const formFieldsRules = {
     name: 'phoneNumber',
     type: 'a-input',
     rules: [
-      { required: true, message: 'Please input your phone number!' },
-      { min: 10, message: 'Length of phone number is more than 10' },
+      { required: true, message: 'Phone number is mandatory' },
+      { min: 10, message: 'Length of phone number should be more than 10' },
+      { pattern: /^0[1-9][0-9]{8}$/, message: 'Invalid phone number format!' },
     ],
   },
 };
 
-const loginFormFieldsRules = [formFieldsRules.email, formFieldsRules.password];
+const loginFormFieldsRules = [validUserRules.email, validUserRules.password];
 
 const manageUserFormFieldsRules = [
-  formFieldsRules.email,
-  formFieldsRules.password,
-  formFieldsRules.userName,
-  formFieldsRules.role,
-  formFieldsRules.address,
-  formFieldsRules.phoneNumber,
+  validUserRules.email,
+  validUserRules.password,
+  validUserRules.userName,
+  validUserRules.role,
+  validUserRules.address,
+  validUserRules.phoneNumber,
 ];
 
 export { loginFormFieldsRules, manageUserFormFieldsRules };

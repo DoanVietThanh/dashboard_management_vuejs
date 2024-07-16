@@ -8,53 +8,11 @@
     <a-form
       :model="formState"
       name="basic"
-      :label-col="{ span: 8 }"
-      :wrapper-col="{ span: 16 }"
       autocomplete="off"
-      labelAlign="left"
       @finish="onFinish"
-      @finishFailed="onFinishFailed"
+      @finish-failed="onFinishFailed"
     >
-      <a-form-item
-        label="Name"
-        name="name"
-        :rules="[
-          { required: true, message: 'Please input product name!' },
-          { min: 4, message: 'Length of name is more than 4' },
-        ]"
-      >
-        <a-input v-model:value="formState.name" />
-      </a-form-item>
-
-      <a-form-item
-        label="Price"
-        name="price"
-        :rules="[{ required: true, message: 'Please input product price!' }]"
-      >
-        <a-input v-model:value="formState.price" type="number" min="0" />
-      </a-form-item>
-
-      <a-form-item
-        label="Description"
-        name="description"
-        :rules="[
-          { required: true, message: 'Please input product description!' },
-          { min: 4, message: 'Length of description is more than 4' },
-        ]"
-      >
-        <a-input v-model:value="formState.description" />
-      </a-form-item>
-
-      <a-form-item
-        label="URL Image"
-        name="urlImage"
-        :rules="[
-          { required: true, message: 'Please input product image URL!' },
-        ]"
-      >
-        <a-input v-model:value="formState.urlImage" />
-      </a-form-item>
-
+      <ReusableFormInput :formFields="formFields" :formState="formState" />
       <a-form-item :wrapper-col="{ offset: 20, span: 16 }">
         <a-button
           type="primary"
@@ -70,8 +28,9 @@
 </template>
 
 <script>
-import axios from 'axios';
 import { notification } from 'ant-design-vue';
+import ReusableFormInput from '../components/ReusableFormInput.vue';
+import { manageProductFormFieldsRules } from '../validations/product.validation.js';
 import {
   createProductService,
   updateProductService,
@@ -79,6 +38,9 @@ import {
 
 export default {
   name: 'ManageProductModal',
+  components: {
+    ReusableFormInput,
+  },
   props: {
     title: {
       type: String,
@@ -105,6 +67,7 @@ export default {
   },
   data() {
     return {
+      formFields: manageProductFormFieldsRules,
       formState: {
         name: '',
         price: '',

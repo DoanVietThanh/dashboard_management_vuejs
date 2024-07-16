@@ -30,7 +30,7 @@
 <script>
 import { notification } from 'ant-design-vue';
 import { loginUser } from '../services/user.service.js';
-import { loginFormFieldsRules } from '../validations/formFields.rules.js';
+import { loginFormFieldsRules } from '../validations/user.validation.js';
 import ReusableFormInput from '../components/ReusableFormInput.vue';
 
 export default {
