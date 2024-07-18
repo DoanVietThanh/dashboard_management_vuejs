@@ -6,13 +6,16 @@
     :footer="null"
   >
     <a-form
+      ref="productFormRef"
       :model="formState"
       name="basic"
       autocomplete="off"
       @finish="onFinish"
       @finish-failed="onFinishFailed"
     >
-      <ReusableFormInput :formFields="formFields" :formState="formState" />
+      <div class="max-h-[60vh] overflow-y-auto">
+        <ReusableFormInput :formFields="formFields" :formState="formState" />
+      </div>
       <a-form-item :wrapper-col="{ offset: 20, span: 16 }">
         <a-button
           type="primary"
@@ -104,6 +107,8 @@ export default {
       });
     },
     handleCancel() {
+      this.resetFormState();
+      this.$refs.productFormRef.resetFields();
       this.$emit('update:open', false);
     },
     async onFinish(values) {

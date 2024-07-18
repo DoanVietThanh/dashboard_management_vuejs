@@ -54,6 +54,15 @@ export default {
     async onFinish(values) {
       await loginUser(values.email, values.password)
         .then((response) => {
+          if (response.data.role == 'user') {
+            this.openNotificationWithIcon(
+              'error',
+              'Error',
+              "You don't have permission"
+            );
+            return;
+          }
+          console.log('🚀 ~ .then ~ response:', response);
           this.openNotificationWithIcon('success', 'Success', response.message);
           localStorage.setItem('user', JSON.stringify(response.data));
           localStorage.setItem('role', response.data.role);

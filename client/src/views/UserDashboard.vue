@@ -10,6 +10,10 @@
       </div>
       <a-table :dataSource="dataSource" :columns="columns" :pagination="false">
         <!-- Custom Role Render -->
+        <template #orderNumber="{ index }">
+          <span>{{ index + 1 }}</span>
+        </template>
+
         <template #role="{ text }">
           <span v-if="text === 'admin'">Admin</span>
           <span v-if="text === 'productAdmin'">Manage Product</span>
@@ -69,9 +73,10 @@ export default {
       dataSource: [],
       columns: [
         {
-          title: 'ID',
-          dataIndex: 'id',
+          title: 'No',
           key: 'id',
+          dataIndex: 'id',
+          slots: { customRender: 'orderNumber' },
         },
         {
           title: 'Email',

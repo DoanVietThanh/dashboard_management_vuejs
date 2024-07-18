@@ -9,6 +9,10 @@
         </a-button>
       </div>
       <a-table :dataSource="dataSource" :columns="columns" :pagination="false">
+        <template #orderNumber="{ index }">
+          <span>{{ index + 1 }}</span>
+        </template>
+
         <template #price="{ record }">
           <span class="font-semibold text-yellow-700">
             $ {{ record.price.toLocaleString() }}
@@ -77,9 +81,10 @@ export default {
       dataSource: [],
       columns: [
         {
-          title: 'ID',
+          title: 'No',
           dataIndex: 'id',
           key: 'id',
+          slots: { customRender: 'orderNumber' },
         },
         {
           title: 'Product Name',
