@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "ant-design-vue": "^4.2.3",
-    "axios": "^1.7.2",
+    "axios": "^1.7.7",
+    "my-vue-app": "file:",
     "oh-vue-icons": "^1.0.0-rc3",
     "vue": "^3.4.29",
     "vue-router": "^4.4.0"
